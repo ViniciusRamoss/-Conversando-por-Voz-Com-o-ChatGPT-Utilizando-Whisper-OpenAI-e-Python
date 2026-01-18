@@ -1,4 +1,4 @@
-# README do Script de Reconhecimento de Fala, Geração de Resposta e Síntese de Voz
+# README do Script de Reconhecimento de Fala, Geração de Resposta e Síntese de Voz - Feito no GoogleColab
 
 Este script demonstra um fluxo de trabalho que envolve reconhecimento de fala, processamento de linguagem natural e síntese de voz. Ele permite que o usuário grave um áudio, transcreva-o, use a transcrição como entrada para um modelo de linguagem (GPT-4) e, em seguida, converta a resposta do modelo em áudio.
 
