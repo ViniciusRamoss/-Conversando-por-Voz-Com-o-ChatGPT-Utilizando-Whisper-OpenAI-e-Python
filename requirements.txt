@@ -3,4 +3,5 @@ scipy
 whisper
 openai
 gtts
-playsound
+jupyter
+ipykernel

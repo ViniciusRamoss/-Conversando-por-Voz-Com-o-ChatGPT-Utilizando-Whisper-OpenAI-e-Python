@@ -4,7 +4,7 @@ from scipy.io.wavfile import write
 import whisper
 from openai import OpenAI
 from gtts import gTTS
-from playsound import playsound
+from IPython.display import Audio
 
 # Configure sua chave da API
 os.environ["OPENAI_API_KEY"] = "sua_chave_aqui"
@@ -46,5 +46,5 @@ gtts_object = gTTS(text=chatgpt_response, lang=language, slow=False)
 response_audio = "response_audio.wav"
 gtts_object.save(response_audio)
 
-# Reproduz o áudio
-playsound(response_audio)
+# Exibe player de áudio no Jupyter
+Audio(response_audio)
