@@ -1,0 +1,6 @@
+sounddevice
+scipy
+whisper
+openai
+gtts
+playsound

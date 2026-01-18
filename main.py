@@ -1,59 +1,36 @@
-from IPython.display import Audio, display, Javascript
-from google.colab import output
-from base64 import b64decode
-import whisper
 import os
+import sounddevice as sd
+from scipy.io.wavfile import write
+import whisper
 from openai import OpenAI
-from gtts import  gTTS
+from gtts import gTTS
+from playsound import playsound
 
-
-os.environ["OPENAI_API_KEY"] = 'chave da api'
+# Configure sua chave da API
+os.environ["OPENAI_API_KEY"] = "sua_chave_aqui"
 language = "pt"
 
+# Função para gravar áudio
+def record(sec=5, filename="request_audio.wav"):
+    fs = 44100  # taxa de amostragem
+    print("Gravando...")
+    audio = sd.rec(int(sec * fs), samplerate=fs, channels=1)
+    sd.wait()
+    write(filename, fs, audio)
+    print("Gravação concluída.")
+    return filename
 
-RECORD = """
-const sleep  = time => new Promise(resolve => setTimeout(resolve, time))
-const b2text = blob => new Promise(resolve => {
-  const reader = new FileReader()
-  reader.onloadend = e => resolve(e.srcElement.result)
-  reader.readAsDataURL(blob)
-})
-var record = time => new Promise(async resolve => {
-  stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-  recorder = new MediaRecorder(stream)
-  chunks = []
-  recorder.ondataavailable = e => chunks.push(e.data)
-  recorder.start()
-  await sleep(time)
-  recorder.onstop = async () =>{
-    blob = new Blob(chunks)
-    text = await b2text(blob)
-    resolve(text)
-  }
-  recorder.stop()
-})
-"""
+# Grava 5 segundos de áudio
+record_file = record(5)
 
-def record(sec=5):
-  display(Javascript(RECORD))
-  js_result = output.eval_js("record(%s)" % (sec * 1000))
-  audio = b64decode(js_result.split(",")[1])
-  file_name = "request_audio.wav"
-  with open (file_name, "wb") as f:
-    f.write(audio)
-  return f"/content/{file_name}"
-
-print("Recording...\n")
-record_file = record()
-display(Audio(record_file, autoplay=False))
-
+# Transcreve com Whisper
 model = whisper.load_model("small")
-
 result = model.transcribe(record_file, fp16=False, language=language)
 transcription = result["text"]
+print("Transcrição:", transcription)
 
+# Usa OpenAI para gerar resposta
 client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
-
 response = client.chat.completions.create(
     model="gpt-4",
     messages=[
@@ -62,11 +39,12 @@ response = client.chat.completions.create(
 )
 
 chatgpt_response = response.choices[0].message.content
-print(chatgpt_response)
+print("Resposta do ChatGPT:", chatgpt_response)
 
+# Converte resposta em áudio com gTTS
 gtts_object = gTTS(text=chatgpt_response, lang=language, slow=False)
-
-response_audio = "/content/response_audio.wav"
+response_audio = "response_audio.wav"
 gtts_object.save(response_audio)
 
-display(Audio(response_audio, autoplay=True))
+# Reproduz o áudio
+playsound(response_audio)
