@@ -4,10 +4,11 @@ from scipy.io.wavfile import write
 import whisper
 from openai import OpenAI
 from gtts import gTTS
-from IPython.display import Audio
 
 # Configure sua chave da API
-os.environ["OPENAI_API_KEY"] = "sua_chave_aqui"
+OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
+if not OPENAI_API_KEY:
+    raise ValueError("Defina a variável de ambiente OPENAI_API_KEY com sua chave da API")
 language = "pt"
 
 # Função para gravar áudio
@@ -30,11 +31,11 @@ transcription = result["text"]
 print("Transcrição:", transcription)
 
 # Usa OpenAI para gerar resposta
-client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+client = OpenAI(api_key=OPENAI_API_KEY)
 response = client.chat.completions.create(
-    model="gpt-4",
+    model="gpt-3.5-turbo",
     messages=[
-        {"role": "user", "content": "Poderia me informar o valor do dólar?"}
+        {"role": "user", "content": transcription}
     ]
 )
 
@@ -43,8 +44,6 @@ print("Resposta do ChatGPT:", chatgpt_response)
 
 # Converte resposta em áudio com gTTS
 gtts_object = gTTS(text=chatgpt_response, lang=language, slow=False)
-response_audio = "response_audio.wav"
+response_audio = "response_audio.mp3"
 gtts_object.save(response_audio)
-
-# Exibe player de áudio no Jupyter
-Audio(response_audio)
+print(f"Áudio salvo em: {response_audio}")
